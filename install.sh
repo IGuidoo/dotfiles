@@ -84,6 +84,57 @@ install_dependencies() {
     fi
 }
 
+# Install GitHub CLI extensions
+install_gh_extensions() {
+    echo_info "Installing GitHub CLI extensions..."
+    
+    if command -v gh &> /dev/null; then
+        echo_info "Attempting to install GitHub CLI copilot extension..."
+        if gh extension install github/gh-copilot 2>/dev/null; then
+            echo_info "GitHub CLI copilot extension installed successfully!"
+        else
+            echo_warn "Could not install gh copilot extension (this is optional)"
+            echo_info "You may need to authenticate with 'gh auth login' first"
+        fi
+    else
+        echo_warn "GitHub CLI not found, skipping copilot extension..."
+    fi
+}
+
+# Apply configuration fixes
+apply_config_fixes() {
+    echo_info "Applying configuration fixes..."
+    
+    # Fix locale settings if not present
+    if [ -f "$HOME/.zshrc" ] && ! grep -q "export LANG=en_US.UTF-8" "$HOME/.zshrc"; then
+        echo_info "Adding locale settings to .zshrc..."
+        echo -e "\n# Fix locale settings" >> "$HOME/.zshrc"
+        echo "export LANG=en_US.UTF-8" >> "$HOME/.zshrc"
+        echo "export LC_ALL=en_US.UTF-8" >> "$HOME/.zshrc"
+    fi
+    
+    # Ensure Powerlevel10k instant prompt setting is present
+    if [ -f "$HOME/.zshrc" ] && ! grep -q "POWERLEVEL9K_INSTANT_PROMPT" "$HOME/.zshrc"; then
+        echo_info "Adding Powerlevel10k instant prompt setting..."
+        # Create temp file with the setting at the top
+        echo "# Suppress Powerlevel10k instant prompt warnings" > /tmp/.zshrc_temp
+        echo "typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet" >> /tmp/.zshrc_temp
+        echo "" >> /tmp/.zshrc_temp
+        cat "$HOME/.zshrc" >> /tmp/.zshrc_temp
+        mv /tmp/.zshrc_temp "$HOME/.zshrc"
+    fi
+    
+    # Handle gh copilot alias - comment it out if extension is not available
+    if [ -f "$HOME/.zshrc" ] && grep -q 'eval "$(gh copilot alias -- zsh)"' "$HOME/.zshrc"; then
+        if ! gh extension list | grep -q "gh-copilot" 2>/dev/null; then
+            echo_info "Commenting out gh copilot alias (extension not available)..."
+            sed -i 's/^eval "$(gh copilot alias -- zsh)"/# eval "$(gh copilot alias -- zsh)"/' "$HOME/.zshrc"
+        fi
+    fi
+    
+    echo_info "Configuration fixes applied!"
+}
+
 # Create symlinks for dotfiles
 create_symlinks() {
     echo_info "Creating symlinks..."
@@ -117,11 +168,15 @@ set_default_shell() {
 main() {
     install_dependencies
     create_symlinks
+    apply_config_fixes
+    install_gh_extensions
     set_default_shell
     
     echo_info "Dotfiles installation complete!"
     echo_info "Please restart your terminal or run 'source ~/.zshrc'"
     echo_info "For tmux plugins, press prefix + I in tmux to install plugins"
+    echo_info ""
+    echo_info "Optional: Run 'gh auth login' to authenticate GitHub CLI for copilot extension"
 }
 
 # Run main function
