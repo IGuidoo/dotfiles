@@ -47,30 +47,35 @@ install_dependencies() {
     sudo apt update
     
     # Install essential packages
-    sudo apt install -y curl git zsh tmux fzf bat exa ripgrep fd-find
+    sudo apt install -y curl git zsh tmux fzf bat exa ripgrep fd-find zoxide
     
-    # Install oh-my-zsh if not present
-    if [ ! -d "$HOME/.oh-my-zsh" ]; then
-        echo_info "Installing Oh My Zsh..."
-        sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-    fi
+    # Install additional tools your config uses
+    command -v nvim >/dev/null 2>&1 || {
+        echo_info "Installing Neovim..."
+        sudo apt install -y neovim
+    }
     
-    # Install powerlevel10k theme
-    if [ ! -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k" ]; then
-        echo_info "Installing Powerlevel10k theme..."
-        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.oh-my-zsh/custom/themes/powerlevel10k
-    fi
+    command -v lazygit >/dev/null 2>&1 || {
+        echo_info "Installing Lazygit..."
+        LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+        curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+        tar xf lazygit.tar.gz lazygit
+        sudo install lazygit /usr/local/bin
+        rm lazygit lazygit.tar.gz
+    }
     
-    # Install zsh plugins
-    if [ ! -d "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" ]; then
-        echo_info "Installing zsh-syntax-highlighting..."
-        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
-    fi
+    # Install GitHub CLI if not present (for gh copilot)
+    command -v gh >/dev/null 2>&1 || {
+        echo_info "Installing GitHub CLI..."
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+        sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+        sudo apt update
+        sudo apt install gh
+    }
     
-    if [ ! -d "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" ]; then
-        echo_info "Installing zsh-autosuggestions..."
-        git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
-    fi
+    # Zinit and all zsh plugins will be installed automatically when zsh starts
+    echo_info "Zinit and zsh plugins will be installed automatically on first zsh startup"
     
     # Install tmux plugin manager
     if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then

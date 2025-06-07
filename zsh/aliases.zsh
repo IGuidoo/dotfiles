@@ -1,0 +1,7 @@
+alias ll="exa -la"
+alias la="exa -a"
+alias l="exa -l"
+alias ..="cd .."
+alias ...="cd ../.."
+alias grep="rg"
+alias cat="bat"
