@@ -15,7 +15,7 @@ Personal dotfiles for zsh, tmux, and other productivity tools.
 ## Quick Install
 
 ```bash
-git clone git@github.com:IGuidoo/dotfiles.git ~/dotfiles
+git clone https://github.com/IGuidoo/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 chmod +x install.sh
 ./install.sh
@@ -25,7 +25,7 @@ chmod +x install.sh
 
 ## What the Install Script Does
 
-1. **Installs system packages**: git, zsh, tmux, fzf, bat, exa, ripgrep, fd-find, zoxide
+1. **Installs system packages**: git, zsh, tmux, fzf, bat, eza, ripgrep, fd-find, zoxide
 2. **Installs additional tools**: neovim, lazygit, github-cli
 3. **Creates symlinks** for all config files
 4. **Sets zsh as default shell**

@@ -47,7 +47,7 @@ install_dependencies() {
     sudo apt update
     
     # Install essential packages
-    sudo apt install -y curl git zsh tmux fzf bat exa ripgrep fd-find zoxide
+    sudo apt install -y curl git zsh tmux fzf bat eza ripgrep fd-find zoxide
     
     # Install additional tools your config uses
     command -v nvim >/dev/null 2>&1 || {
